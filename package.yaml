@@ -1,0 +1,59 @@
+name:                typed-lambda
+version:             0.1.0.0
+github:              "emiflake/typed-lambda"
+license:             BSD3
+author:              "Emily Martins"
+maintainer:          "emily.flakeheart@gmail.com"
+copyright:           "2020 Emily Martins"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Discord Bot
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/typed-lambda#readme>
+
+dependencies:
+- base >= 4.9
+- discord-haskell == 1.2.0
+- text == 1.2.3.*
+- async == 2.2.2
+- aeson == 1.4.6.0
+- containers == 0.6.0.1
+- servant == 0.16.2
+- servant-client == 0.16.0.1
+- http-client == 0.6.4
+- pretty-simple == 3.2.1.0
+
+
+
+library:
+  source-dirs: src
+
+executables:
+  typed-lambda-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - typed-lambda
+
+tests:
+  typed-lambda-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - typed-lambda
