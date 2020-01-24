@@ -21,7 +21,6 @@ import qualified Data.Text.IO             as TIO
 import           Data.HList
 
 import           Control.Concurrent.Async
-
 import           Data.IORef
 
 import           Booru.Kona

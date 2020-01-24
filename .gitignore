@@ -1,0 +1,4 @@
+.stack-work/
+typed-lambda.cabal
+*~
+.env
