@@ -25,6 +25,20 @@ packages:
       sha256: d2ef9decb877b056b106c6736cc7eec80a553ab1d2e4a175fa1b36c39fee2328
   original:
     hackage: pretty-simple-3.2.1.0
+- completed:
+    hackage: fast-logger-3.0.0@sha256:665f61c0b20c8138efa760a549d4515aa216eeddda57d4a8918a09d9ead511ca,2255
+    pantry-tree:
+      size: 1000
+      sha256: 964df5b3453ee96f48d613f2a3d5819040cbc9158b748eb143977af28c6b11fa
+  original:
+    hackage: fast-logger-3.0.0
+- completed:
+    hackage: selda-0.5.1.0@sha256:b942ecc9ff7959c922da92d13fcfe70a0823eafa32086663f3cc60138ce7d3bf,2997
+    pantry-tree:
+      size: 2462
+      sha256: 050f9f2ed6f91bdedc44a6cdcbff38b37a75610d10153bbe64d82c2a347307d6
+  original:
+    hackage: selda-0.5.1.0
 snapshots:
 - completed:
     size: 524162

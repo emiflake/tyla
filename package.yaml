@@ -32,8 +32,7 @@ dependencies:
 - pretty-simple == 3.2.1.0
 - fused-effects == 0.5.0.1
 - fast-logger == 3.0.0
-- selda == 0.5.1.0
-- selda-sqlite
+- serialise == 0.2.2.0
 
 
 library:
