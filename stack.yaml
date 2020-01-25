@@ -43,6 +43,8 @@ extra-deps:
 - discord-haskell-1.2.0
 - emoji-0.1.0.2 
 - pretty-simple-3.2.1.0
+- fast-logger-3.0.0
+- selda-0.5.1.0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
