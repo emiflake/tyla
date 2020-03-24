@@ -19,6 +19,11 @@
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 resolver: lts-14.21
 
+
+nix:
+  enable: true
+  packages: [zlib]
+
 # User packages to be built.
 # Various formats can be used as shown in the example below.
 #
@@ -41,10 +46,12 @@ packages:
 #
 extra-deps:
 - discord-haskell-1.2.0
-- emoji-0.1.0.2 
+- emoji-0.1.0.2
 - pretty-simple-3.2.1.0
 - fast-logger-3.0.0
 - selda-0.5.1.0
+- fused-effects-1.0.2.0
+
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

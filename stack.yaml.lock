@@ -39,6 +39,13 @@ packages:
       sha256: 050f9f2ed6f91bdedc44a6cdcbff38b37a75610d10153bbe64d82c2a347307d6
   original:
     hackage: selda-0.5.1.0
+- completed:
+    hackage: fused-effects-1.0.2.0@sha256:ba1fc7cc8cd31cb89f32dad68c7859cfc6c269aed445f725fbcc7d895127c6a7,4853
+    pantry-tree:
+      size: 5638
+      sha256: 8cb7ed193d06cb623d1c235a250174c3e110eae3eba65e1492ef4d3a7f3fa342
+  original:
+    hackage: fused-effects-1.0.2.0
 snapshots:
 - completed:
     size: 524162

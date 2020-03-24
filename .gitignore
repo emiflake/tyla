@@ -2,3 +2,4 @@
 typed-lambda.cabal
 *~
 .env
+config.json

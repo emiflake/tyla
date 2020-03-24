@@ -1,54 +1,77 @@
-{-# LANGUAGE DataKinds           #-}
-{-# LANGUAGE FlexibleContexts    #-}
-{-# LANGUAGE NumericUnderscores  #-}
-{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE NumericUnderscores #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications    #-}
+{-# LANGUAGE TypeApplications #-}
 
-import qualified Data.Text             as Text
-import qualified Data.Text.IO          as TIO
+import qualified Config
+import Data.Foldable
+import Data.Functor
+import Data.Text (Text)
+import qualified Discord.Internal.Types.Channel as Discord
+import qualified Discord.Types as Discord
+import qualified Tyla.Effect.Discord as Discord
+import qualified Tyla.Parser as Parser
+import Tyla.Parser (Parser)
+import Tyla.Prelude hiding (handleMsg, parseEvent)
+import qualified Tyla.Prelude as Tyla
 
-import           Discord               hiding (runDiscord)
-import qualified Discord
+data Command
+  = Ping Discord.ChannelId
+  | Succ Discord.ChannelId Int
+  deriving (Show)
 
-import           System.Environment
+data Msg
+  = Message Command
+  | NoOp
 
-import           Modules.Counter
-import           Modules.Kona
-import           Modules.Logger
-import           Modules.Ping
+prefixed :: Parser a -> Parser a
+prefixed = (Parser.text "\\" *>)
 
-import           Control.Exception
+parseCommand :: Discord.Message -> Parser Command
+parseCommand Discord.Message {..} =
+  prefixed $
+    asum
+      [ Parser.text "ping"
+          $> Ping messageChannel,
+        Parser.text "succ"
+          *> Parser.whitespace
+          *> Parser.int
+          <&> Succ messageChannel
+      ]
 
-import           Control.Effect
-import           Control.Effect.Reader
-import           Effect.Discord
-import           Effect.Log
-import           Effect.Serial
+parseEvent :: Discord.Event -> Msg
+parseEvent evt =
+  case evt of
+    Discord.MessageCreate msg ->
+      case Parser.runMaybe (parseCommand msg) (Discord.messageText msg) of
+        Just command -> Message command
+        Nothing -> NoOp
+    _ -> NoOp
 
-stack = sequence_
-  [ ping
-  , loggerModule
-  , kona
-  , counter
-  ]
-
-runStack dis evt = do
-  e :: Either SomeException () <- try $ do
-    logger <- newLogger
-    runM . runSerial @"counter" @Int "cereals"
-         . runDiscord dis
-         . runReader evt
-         . runLogStdout logger Debug
-         $ stack
-  case e of
-    Left err -> print err
-    _        -> pure ()
-
+handleMsg :: Tyla.Stack sig m => Msg -> m ()
+handleMsg msg =
+  case msg of
+    NoOp ->
+      pure ()
+    Message command ->
+      case command of
+        Ping channelId ->
+          void $ Discord.sendMessage channelId "Hello"
+        Succ channelId number ->
+          void $
+            Discord.sendMessage
+              channelId
+              (showText (succ number))
 
 main :: IO ()
 main = do
-  Just token <- lookupEnv "DISCORD_TOKEN"
-  userFacingError <- Discord.runDiscord $ def { discordToken = Text.pack token
-                                      , discordOnEvent = runStack }
-  TIO.putStrLn userFacingError
+  Just config <- Config.read "config.json"
+  Tyla.run (Config.configToken config) $
+    Tyla.Reactor
+      { Tyla.parseEvent = parseEvent,
+        Tyla.handleMsg = handleMsg
+      }
