@@ -11,6 +11,7 @@ in (pkgs.mkShell {
     pkgs.ghc
     pkgs.ormolu
     (all-hies.selection { selector = p: { inherit (p) ghc882; }; })
+    pkgs.postgresql
 
   ];
 })

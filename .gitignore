@@ -3,3 +3,5 @@ typed-lambda.cabal
 *~
 .env
 config.json
+pg
+dist-newstyle

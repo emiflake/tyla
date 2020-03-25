@@ -22,7 +22,7 @@ resolver: lts-14.21
 
 nix:
   enable: true
-  packages: [zlib]
+  packages: [zlib, postgresql]
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.

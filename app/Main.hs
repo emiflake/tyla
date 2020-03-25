@@ -10,7 +10,6 @@
 import qualified Config
 import Data.Foldable
 import Data.Functor
-import Data.Text (Text)
 import qualified Discord.Internal.Types.Channel as Discord
 import qualified Discord.Types as Discord
 import qualified Tyla.Effect.Discord as Discord
