@@ -21,8 +21,8 @@ module Tyla.Effect.Database
     runSession,
 
     -- ** Run effect
-    runPostgreSQL,
-    PostgreSQLC (..),
+    runDatabase,
+    DatabaseC (..),
 
     -- ** Errors
     Error (..),
@@ -60,19 +60,21 @@ runSession :: Has Database sig m => Session a -> m (Either Error a)
 runSession session =
   send (RunSession session pure)
 
-newtype PostgreSQLC m a
-  = PostgreSQLC {unPostgreSQLC :: ReaderC Hasql.Pool m a}
+newtype DatabaseC m a
+  = DatabaseC
+      { unDatabaseC :: ReaderC Hasql.Pool m a
+      }
   deriving newtype (Applicative, Functor, Monad, MonadIO)
 
-instance (Algebra sig m, Has (Lift IO) sig m) => Algebra (Database :+: sig) (PostgreSQLC m) where
+instance (Algebra sig m, Has (Lift IO) sig m) => Algebra (Database :+: sig) (DatabaseC m) where
   alg = \case
     R next ->
-      PostgreSQLC (alg (R (handleCoercible next)))
+      DatabaseC (alg (R (handleCoercible next)))
     L (RunSession session next) -> do
-      pool <- PostgreSQLC ask
+      pool <- DatabaseC ask
       result <- sendM $ Hasql.use pool session
       next $ first Error result
 
-runPostgreSQL :: Hasql.Pool -> PostgreSQLC m a -> m a
-runPostgreSQL pool =
-  runReader pool . unPostgreSQLC
+runDatabase :: Hasql.Pool -> DatabaseC m a -> m a
+runDatabase pool =
+  runReader pool . unDatabaseC
