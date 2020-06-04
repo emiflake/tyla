@@ -16,15 +16,12 @@
 module Tyla.Effect.Log
   ( Log (..),
     LogLevel (..),
-    logDebug,
-    logInfo,
-    logWarning,
-    logError,
-    Logger,
-    newLogger,
+    debug,
+    info,
+    warn,
+    err,
     runLogStdout,
     LogStdoutC (..),
-    log,
   )
 where
 
@@ -34,88 +31,65 @@ import Control.Monad
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Text (Text)
 import GHC.Generics (Generic1)
-import System.Log.FastLogger (TimedFastLogger, ToLogStr, toLogStr)
-import qualified System.Log.FastLogger as FastLogger
 import Prelude hiding (log)
+import Text.Printf
 
 data LogLevel
   = Debug
   | Info
-  | Warning
-  | Error
+  | Warn
+  | Err
   deriving (Bounded, Eq, Ord)
-
-instance ToLogStr LogLevel where
-  toLogStr logLevel =
-    case logLevel of
-      Debug -> "[debug]"
-      Info -> "[info]"
-      Warning -> "[warning]"
-      Error -> "[error]"
 
 instance Show LogLevel where
   show logLevel =
     case logLevel of
-      Debug -> "debug"
-      Info -> "info"
-      Warning -> "warning"
-      Error -> "error"
+      Debug -> "[debug]"
+      Info -> "[info]"
+      Warn -> "[warn]"
+      Err -> "[err]"
 
 data Log (m :: * -> *) k
   = Log Text LogLevel (m k)
   deriving stock (Functor, Generic1)
   deriving (HFunctor, Effect)
 
-logDebug :: (Has Log sig m) => Text -> m ()
-logDebug msg =
+debug :: (Has Log sig m) => Text -> m ()
+debug msg =
   logRaw msg Debug
 
-logInfo :: (Has Log sig m) => Text -> m ()
-logInfo msg =
+info :: (Has Log sig m) => Text -> m ()
+info msg =
   logRaw msg Info
 
-logWarning :: (Has Log sig m) => Text -> m ()
-logWarning msg =
-  logRaw msg Warning
+warn :: (Has Log sig m) => Text -> m ()
+warn msg =
+  logRaw msg Warn
 
-logError :: (Has Log sig m) => Text -> m ()
-logError msg =
-  logRaw msg Error
+err :: (Has Log sig m) => Text -> m ()
+err msg =
+  logRaw msg Err
 
 logRaw :: (Has Log sig m) => Text -> LogLevel -> m ()
 logRaw msg lvl =
   send (Log msg lvl (pure ()))
 
 newtype LogStdoutC m a
-  = LogStdoutC {unLogC :: ReaderC (Logger, LogLevel) m a}
+  = LogStdoutC {unLogC :: ReaderC LogLevel m a}
   deriving newtype (Applicative, Functor, Monad, MonadIO)
 
 instance (Algebra sig m, MonadIO m) => Algebra (Log :+: sig) (LogStdoutC m) where
   alg c =
     case c of
       L (Log msg lvl next) -> do
-        (logger, minLvl) :: (Logger, LogLevel) <- LogStdoutC ask
-        liftIO $ when (lvl >= minLvl) (log logger lvl msg)
+        minLvl <- LogStdoutC ask
+        liftIO . when (lvl >= minLvl) $
+          printf "%s: %s" (show lvl) msg
         next
       R next ->
         LogStdoutC (alg (R (handleCoercible next)))
 
-runLogStdout :: Logger -> LogLevel -> LogStdoutC m a -> m a
-runLogStdout logger level =
-  runReader (logger, level) . unLogC
+runLogStdout :: LogLevel -> LogStdoutC m a -> m a
+runLogStdout level =
+  runReader level . unLogC
 
-type Logger =
-  TimedFastLogger
-
-newLogger :: IO Logger
-newLogger = do
-  timeCache <- FastLogger.newTimeCache FastLogger.simpleTimeFormat
-  (logger, _cleanUp) <-
-    FastLogger.newTimedFastLogger
-      timeCache
-      (FastLogger.LogStdout FastLogger.defaultBufSize)
-  pure logger
-
-log :: FastLogger.ToLogStr a => Logger -> LogLevel -> a -> IO ()
-log logger lvl msg =
-  logger (\t -> toLogStr t <> " " <> toLogStr lvl <> " " <> toLogStr msg <> "\n")

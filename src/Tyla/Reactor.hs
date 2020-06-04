@@ -40,7 +40,6 @@ data Reactor msg
 
 run :: Text -> Reactor msg -> IO ()
 run token reactor = do
-  logger <- newLogger
   pool <- Hasql.Pool.acquire (3, 10, "host=localhost port=5432 dbname=tyla")
   userFacingError <-
     Discord.runDiscord $
@@ -51,7 +50,7 @@ run token reactor = do
               let msg = parseEvent reactor evt
               runM
                 . runDiscord dis
-                . runLogStdout logger Debug
+                . runLogStdout Debug
                 . runDatabase pool
                 $ handleMsg reactor msg
             case e of
